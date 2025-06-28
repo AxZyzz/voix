@@ -1,8 +1,8 @@
-# 🎯 Voix - Adaptive Language Learning Companion
+# 🎯 NOVA AI - Adaptive Language Learning Companion
 
 <div align="center">
 
-![Voix Logo](https://img.shields.io/badge/Voix-Language%20Learning%20AI-blue?style=for-the-badge&logo=react)
+![NOVA Ai Logo](https://img.shields.io/badge/Voix-Language%20Learning%20AI-blue?style=for-the-badge&logo=react)
 ![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-3178C6?style=for-the-badge&logo=typescript)
 ![Vite](https://img.shields.io/badge/Vite-7.0.0-646CFF?style=for-the-badge&logo=vite)
