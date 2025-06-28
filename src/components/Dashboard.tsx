@@ -1,16 +1,18 @@
-import React from 'react';
-import { MessageCircle, Languages, Camera, Users, ArrowLeft, Sparkles, ArrowRight, Gamepad2, BookOpen } from 'lucide-react';
+import React, { useState } from 'react';
+import { MessageCircle, Languages, Camera, Users, ArrowLeft, Sparkles, ArrowRight, Gamepad2, BookOpen, FileText } from 'lucide-react';
 import { CurrentPage } from '../App';
+import { motion } from 'framer-motion';
 
 interface DashboardProps {
   onNavigate: (page: CurrentPage) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
+  const [showAIChoice, setShowAIChoice] = useState(false);
   const features = [
     {
       id: 'ai-conversation',
-      title: 'AI Conversation',
+      title: 'SWARAM AI',
       description: 'Practice natural conversations with our advanced AI language partner',
       icon: MessageCircle,
       color: 'blue',
@@ -18,19 +20,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     },
     {
       id: 'translation',
-      title: 'Smart Translation',
+      title: 'VOIX AI',
       description: 'Translate text and speech instantly with high accuracy',
       icon: Languages,
       color: 'green',
       gradient: 'from-green-500 to-green-600'
-    },
-    {
-      id: 'image-identification',
-      title: 'Visual Learning',
-      description: 'Learn by pointing your camera at objects around you',
-      icon: Camera,
-      color: 'purple',
-      gradient: 'from-purple-500 to-purple-600'
     },
     {
       id: 'playground',
@@ -47,8 +41,93 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       icon: BookOpen,
       color: 'pink',
       gradient: 'from-pink-500 to-pink-600'
+    },
+    {
+      id: 'text-from-image',
+      title: 'Text from Image',
+      description: 'Extract text from images using Google Vision API.',
+      icon: FileText,
+      color: 'purple',
+      gradient: 'from-purple-500 to-pink-500'
     }
   ];
+
+  if (showAIChoice) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
+        <div className="relative bg-white/70 backdrop-blur-2xl rounded-3xl shadow-2xl p-12 max-w-md w-full flex flex-col items-center overflow-hidden">
+          {/* Animated Icon */}
+          <motion.div
+            initial={{ scale: 0.7, opacity: 0, y: 40 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+            className="mb-6"
+          >
+            <MessageCircle className="w-16 h-16 text-blue-500 drop-shadow-xl animate-bounce-slow" />
+          </motion.div>
+          <motion.h2
+            className="text-4xl font-extrabold mb-4 text-gray-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-gradient-move text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            SWARAM AI
+          </motion.h2>
+          <motion.p
+            className="text-gray-700 mb-10 text-lg text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
+            How would you like to practice with your AI language partner?
+          </motion.p>
+          <motion.button
+            className="w-full py-4 mb-4 rounded-xl font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2"
+            onClick={() => onNavigate('ai-voice-conversation')}
+            whileHover={{ scale: 1.04 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+          >
+            <Sparkles className="w-6 h-6 text-white animate-pulse" />
+            Voice Conversation
+          </motion.button>
+          <motion.button
+            className="w-full py-4 rounded-xl font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2"
+            onClick={() => onNavigate('ai-conversation')}
+            whileHover={{ scale: 1.04 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+          >
+            <MessageCircle className="w-6 h-6 text-white animate-pulse" />
+            Text Conversation
+          </motion.button>
+          <motion.button
+            className="mt-8 text-gray-500 hover:text-gray-700 underline text-base"
+            onClick={() => setShowAIChoice(false)}
+            whileHover={{ scale: 1.05 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.5 }}
+          >
+            Back to Dashboard
+          </motion.button>
+          {/* Subtle animated background shapes */}
+          <motion.div
+            className="absolute -top-10 -left-10 w-40 h-40 bg-blue-400/20 rounded-full blur-2xl z-0"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.7, 0.5] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-400/20 rounded-full blur-2xl z-0"
+            animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.7, 0.5] }}
+            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-4">
@@ -82,7 +161,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           {features.map((feature, index) => (
             <div
               key={feature.id}
-              onClick={() => onNavigate(feature.id as CurrentPage)}
+              onClick={() => feature.id === 'ai-conversation' ? setShowAIChoice(true) : onNavigate(feature.id as CurrentPage)}
               className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
               style={{ animationDelay: `${index * 150}ms` }}
             >

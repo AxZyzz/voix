@@ -4,6 +4,8 @@ import { Mic, MicOff, Volume2, VolumeX, Sparkles, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { InfiniteSlider } from "@/components/ui/infinite-slider";
+import { MessageCircle, Languages, Camera, Users } from "lucide-react";
 
 interface VoiceChatProps {
   onStart?: () => void;
@@ -388,4 +390,43 @@ export default function VoiceChatDemo() {
       demoMode={true}
     />
   );
-} 
+}
+
+function InfiniteSliderBasic() {
+  return (
+    <InfiniteSlider gap={32} reverse className="w-full h-48 bg-white rounded-2xl shadow-xl items-center flex">
+      {/* Replace with Unsplash images or Lucide icons */}
+      <div className="flex flex-col items-center justify-center px-8">
+        <div className="bg-blue-500 rounded-xl p-4 mb-2">
+          <MessageCircle className="w-12 h-12 text-white" />
+        </div>
+        <span className="font-bold text-gray-800">AI Chat</span>
+      </div>
+      <div className="flex flex-col items-center justify-center px-8">
+        <div className="bg-green-500 rounded-xl p-4 mb-2">
+          <Languages className="w-12 h-12 text-white" />
+        </div>
+        <span className="font-bold text-gray-800">Translate</span>
+      </div>
+      <div className="flex flex-col items-center justify-center px-8">
+        <div className="bg-purple-500 rounded-xl p-4 mb-2">
+          <Camera className="w-12 h-12 text-white" />
+        </div>
+        <span className="font-bold text-gray-800">Visual</span>
+      </div>
+      <div className="flex flex-col items-center justify-center px-8">
+        <div className="bg-indigo-500 rounded-xl p-4 mb-2">
+          <Users className="w-12 h-12 text-white" />
+        </div>
+        <span className="font-bold text-gray-800">Community</span>
+      </div>
+      {/* Example Unsplash image */}
+      <div className="flex flex-col items-center justify-center px-8">
+        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=120&q=80" alt="User" className="w-16 h-16 rounded-full mb-2" />
+        <span className="font-bold text-gray-800">Learner</span>
+      </div>
+    </InfiniteSlider>
+  );
+}
+
+export { VoiceChatDemo, InfiniteSliderBasic }; 

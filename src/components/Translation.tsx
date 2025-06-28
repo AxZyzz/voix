@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Languages, ArrowRight, Volume2, Copy, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Languages, ArrowRight, Volume2, Copy, Check, Lightbulb } from 'lucide-react';
 import { CurrentPage } from '../App';
 import VoiceRecorder from './VoiceRecorder';
+import { TranslationService, TranslationResult, GeminiScenario } from '../lib/translationService';
 
 interface TranslationProps {
   onNavigate: (page: CurrentPage) => void;
@@ -15,8 +16,7 @@ const Translation: React.FC<TranslationProps> = ({ onNavigate }) => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(true);
   const [copied, setCopied] = useState(false);
-
-  const languages = [
+  const [languages, setLanguages] = useState([
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'es', name: 'Spanish', flag: '🇪🇸' },
     { code: 'fr', name: 'French', flag: '🇫🇷' },
@@ -27,37 +27,65 @@ const Translation: React.FC<TranslationProps> = ({ onNavigate }) => {
     { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
     { code: 'ko', name: 'Korean', flag: '🇰🇷' },
     { code: 'ar', name: 'Arabic', flag: '🇸🇦' }
-  ];
+  ]);
+  const [geminiScenario, setGeminiScenario] = useState<GeminiScenario | null>(null);
+  const [showScenario, setShowScenario] = useState(false);
+  const [isGeneratingScenario, setIsGeneratingScenario] = useState(false);
 
-  const translateText = (text: string) => {
+  // Load supported languages on component mount
+  useEffect(() => {
+    const loadLanguages = async () => {
+      try {
+        const supportedLanguages = await TranslationService.getSupportedLanguages();
+        // Merge with existing languages to keep flags
+        const mergedLanguages = supportedLanguages.map(lang => {
+          const existing = languages.find(l => l.code === lang.code);
+          return {
+            code: lang.code,
+            name: lang.name,
+            flag: existing?.flag || '🌐'
+          };
+        });
+        setLanguages(mergedLanguages);
+      } catch (error) {
+        console.error('Failed to load languages:', error);
+      }
+    };
+    loadLanguages();
+  }, []);
+
+  const translateText = async (text: string) => {
     if (!text.trim()) return;
     
     setIsTranslating(true);
+    setGeminiScenario(null);
+    setShowScenario(false);
     
-    // Simulate translation API call
-    setTimeout(() => {
-      const translations = {
-        'en-es': {
-          'hello': 'hola',
-          'how are you': 'cómo estás',
-          'good morning': 'buenos días',
-          'thank you': 'gracias'
-        },
-        'es-en': {
-          'hola': 'hello',
-          'cómo estás': 'how are you',
-          'buenos días': 'good morning',
-          'gracias': 'thank you'
-        }
-      };
+    try {
+      const result: TranslationResult = await TranslationService.translateText(text, targetLang, sourceLang);
+      setTranslatedText(result.translatedText);
       
-      const key = `${sourceLang}-${targetLang}`;
-      const lowerText = text.toLowerCase();
-      const result = translations[key]?.[lowerText] || `Translated: ${text}`;
-      
-      setTranslatedText(result);
+      // Generate contextual scenario for all types of input (words, phrases, sentences)
+      setIsGeneratingScenario(true);
+      try {
+        const scenario = await TranslationService.createContextualScenario(
+          text.trim(),
+          sourceLang,
+          targetLang,
+          result.translatedText
+        );
+        setGeminiScenario(scenario);
+      } catch (error) {
+        console.error('Failed to generate scenario:', error);
+      } finally {
+        setIsGeneratingScenario(false);
+      }
+    } catch (error) {
+      console.error('Translation failed:', error);
+      setTranslatedText('Translation failed. Please try again.');
+    } finally {
       setIsTranslating(false);
-    }, 1000);
+    }
   };
 
   const handleVoiceRecording = (audioBlob: Blob) => {
@@ -96,6 +124,69 @@ const Translation: React.FC<TranslationProps> = ({ onNavigate }) => {
     }
   };
 
+  const renderScenario = (scenario: GeminiScenario) => {
+    // Convert markdown-style bold to HTML
+    const formattedScenario = scenario.scenario.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    return (
+      <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <Lightbulb className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-800">Learning Context</span>
+          </div>
+          <button
+            onClick={() => setShowScenario(!showScenario)}
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+          >
+            {showScenario ? 'Hide' : 'Show Study Materials'}
+          </button>
+        </div>
+        
+        {showScenario && (
+          <div className="space-y-4">
+            {/* Scenario */}
+            <div className="bg-white p-3 rounded-lg border border-blue-100">
+              <h4 className="text-sm font-semibold text-blue-800 mb-2">Usage Scenario</h4>
+              <div 
+                className="text-sm text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: formattedScenario }}
+              />
+            </div>
+
+            {/* Context */}
+            <div className="bg-white p-3 rounded-lg border border-blue-100">
+              <h4 className="text-sm font-semibold text-blue-800 mb-2">Context & Explanation</h4>
+              <div className="text-sm text-gray-700 leading-relaxed">
+                {scenario.context}
+              </div>
+            </div>
+
+            {/* Study Tips */}
+            {scenario.studyTips && (
+              <div className="bg-white p-3 rounded-lg border border-blue-100">
+                <h4 className="text-sm font-semibold text-blue-800 mb-2">Study Tips</h4>
+                <div className="text-sm text-gray-700 leading-relaxed">
+                  {scenario.studyTips}
+                </div>
+              </div>
+            )}
+
+            {/* Practice Exercise */}
+            {scenario.practiceExercise && (
+              <div className="bg-white p-3 rounded-lg border border-blue-100">
+                <h4 className="text-sm font-semibold text-blue-800 mb-2">Practice Exercise</h4>
+                <div className="text-sm text-gray-700 leading-relaxed">
+                  {scenario.practiceExercise}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Header */}
@@ -115,20 +206,10 @@ const Translation: React.FC<TranslationProps> = ({ onNavigate }) => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800">Smart Translation</h1>
-                  <p className="text-sm text-gray-600">Translate text and speech instantly</p>
+                  <p className="text-sm text-gray-600">Translate text and speech instantly with AI context</p>
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setIsVoiceMode(!isVoiceMode)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                isVoiceMode
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                  : 'bg-green-100 text-green-700 hover:bg-green-200'
-              }`}
-            >
-              {isVoiceMode ? 'Text Mode' : 'Voice Mode'}
-            </button>
           </div>
         </div>
       </div>
@@ -177,111 +258,65 @@ const Translation: React.FC<TranslationProps> = ({ onNavigate }) => {
         </div>
 
         {/* Translation Interface */}
-        {isVoiceMode ? (
-          <div className="bg-white rounded-2xl p-8 shadow-lg">
-            <div className="text-center mb-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Voice Translation</h3>
-              <p className="text-gray-600">Speak in {languages.find(l => l.code === sourceLang)?.name} and get instant translation</p>
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Source Text */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                {languages.find(l => l.code === sourceLang)?.flag} {languages.find(l => l.code === sourceLang)?.name}
+              </h3>
+              <button
+                onClick={() => speakText(sourceText, sourceLang)}
+                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-300"
+                disabled={!sourceText}
+              >
+                <Volume2 className="w-4 h-4 text-gray-600" />
+              </button>
             </div>
-            <VoiceRecorder
-              onRecordingComplete={handleVoiceRecording}
-              onRecordingStart={() => console.log('Recording started')}
-              onRecordingStop={() => console.log('Recording stopped')}
+            <textarea
+              value={sourceText}
+              onChange={(e) => {
+                setSourceText(e.target.value);
+                if (e.target.value) {
+                  translateText(e.target.value);
+                } else {
+                  setTranslatedText('');
+                  setGeminiScenario(null);
+                }
+              }}
+              placeholder="Type or paste text to translate..."
+              className="w-full h-40 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
-            {translatedText && (
-              <div className="mt-8 p-6 bg-green-50 rounded-xl border border-green-200">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-green-800">Translation</span>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => speakText(translatedText, targetLang)}
-                      className="p-2 bg-green-100 hover:bg-green-200 rounded-lg transition-colors duration-300"
-                    >
-                      <Volume2 className="w-4 h-4 text-green-600" />
-                    </button>
-                    <button
-                      onClick={copyToClipboard}
-                      className="p-2 bg-green-100 hover:bg-green-200 rounded-lg transition-colors duration-300"
-                    >
-                      {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-green-600" />}
-                    </button>
-                  </div>
-                </div>
-                <p className="text-lg text-gray-800">{translatedText}</p>
-              </div>
-            )}
           </div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Source Text */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {languages.find(l => l.code === sourceLang)?.flag} {languages.find(l => l.code === sourceLang)?.name}
-                </h3>
+
+          {/* Translated Text */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                {languages.find(l => l.code === targetLang)?.flag} {languages.find(l => l.code === targetLang)?.name}
+              </h3>
+              <div className="flex space-x-2">
                 <button
-                  onClick={() => speakText(sourceText, sourceLang)}
+                  onClick={() => speakText(translatedText, targetLang)}
                   className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-300"
-                  disabled={!sourceText}
+                  disabled={!translatedText}
                 >
                   <Volume2 className="w-4 h-4 text-gray-600" />
                 </button>
+                <button
+                  onClick={copyToClipboard}
+                  className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-300"
+                  disabled={!translatedText}
+                >
+                  {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-600" />}
+                </button>
               </div>
-              <textarea
-                value={sourceText}
-                onChange={(e) => {
-                  setSourceText(e.target.value);
-                  if (e.target.value) {
-                    translateText(e.target.value);
-                  } else {
-                    setTranslatedText('');
-                  }
-                }}
-                placeholder="Type or paste text to translate..."
-                className="w-full h-40 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
             </div>
-
-            {/* Translated Text */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {languages.find(l => l.code === targetLang)?.flag} {languages.find(l => l.code === targetLang)?.name}
-                </h3>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => speakText(translatedText, targetLang)}
-                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-300"
-                    disabled={!translatedText}
-                  >
-                    <Volume2 className="w-4 h-4 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={copyToClipboard}
-                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-300"
-                    disabled={!translatedText}
-                  >
-                    {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-600" />}
-                  </button>
-                </div>
-              </div>
-              <div className="w-full h-40 p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center">
-                {isTranslating ? (
-                  <div className="flex items-center space-x-2 text-gray-600">
-                    <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span>Translating...</span>
-                  </div>
-                ) : translatedText ? (
-                  <div className="w-full h-full">
-                    <p className="text-gray-800 leading-relaxed">{translatedText}</p>
-                  </div>
-                ) : (
-                  <p className="text-gray-500">Translation will appear here...</p>
-                )}
-              </div>
+            <div className="w-full h-40 p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-800 overflow-y-auto">
+              {isTranslating ? 'Translating...' : translatedText}
             </div>
           </div>
-        )}
+        </div>
 
         {/* Quick Phrases */}
         <div className="mt-8 bg-white rounded-2xl p-6 shadow-lg">
