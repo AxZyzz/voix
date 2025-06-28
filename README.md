@@ -10,9 +10,6 @@
 
 *Your AI-Powered Language Learning Journey Starts Here*
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-View%20App-green?style=for-the-badge)](https://voix-app.vercel.app)
-[![Documentation](https://img.shields.io/badge/Documentation-Read%20More-blue?style=for-the-badge)](https://voix-docs.vercel.app)
-
 </div>
 
 ---
