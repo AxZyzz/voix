@@ -96,7 +96,7 @@ To make language learning accessible, engaging, and effective through the power 
 ### Quick Start
 bash
 # Clone the repository
-git clone https://github.com/your-username/voix.git
+git clone https://github.com/AxZyzz/voix.git
 cd voix
 
 # Install dependencies
