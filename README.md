@@ -434,18 +434,6 @@ git push origin feature/amazing-feature
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### Third-party Licenses
-- *Google APIs*: Subject to Google's terms of service
-- *React*: MIT License
-- *Tailwind CSS*: MIT License
-- *Framer Motion*: MIT License
-
----
-
 ## 🙏 Acknowledgments
 
 - *Google Cloud* for providing powerful AI APIs
