@@ -457,21 +457,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📞 Support
-
-- *Documentation*: [https://voix-docs.vercel.app](https://voix-docs.vercel.app)
-- *Issues*: [GitHub Issues](https://github.com/your-username/voix/issues)
-- *Discussions*: [GitHub Discussions](https://github.com/your-username/voix/discussions)
-- *Email*: support@voix-app.com
-
----
-
 <div align="center">
 
-*Made with ❤ by the Voix Team*
-
-[![GitHub stars](https://img.shields.io/github/stars/your-username/voix?style=social)](https://github.com/your-username/voix)
-[![GitHub forks](https://img.shields.io/github/forks/your-username/voix?style=social)](https://github.com/your-username/voix)
-[![GitHub issues](https://img.shields.io/github/issues/your-username/voix)](https://github.com/your-username/voix/issues)
+*Made with ❤ by the Team VXSM*
 
 </div>
