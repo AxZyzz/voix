@@ -34,7 +34,7 @@
 
 ## 🌟 Overview
 
-*Voix* is a comprehensive, AI-powered language learning platform that revolutionizes how people learn languages. Built with modern web technologies and cutting-edge AI, Voix provides an immersive, personalized learning experience that adapts to each user's unique learning style and pace.
+*NOVA  AI* is a comprehensive, AI-powered language learning platform that revolutionizes how people learn languages. Built with modern web technologies and cutting-edge AI, NOVA AI provides an immersive, personalized learning experience that adapts to each user's unique learning style and pace.
 
 ### 🎯 Mission
 To make language learning accessible, engaging, and effective through the power of artificial intelligence and modern technology.
